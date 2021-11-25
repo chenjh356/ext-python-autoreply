@@ -12,7 +12,7 @@ except ImportError:
 import time
 
 qun = {}
-myself = ''
+myself = []
 
 
 async def get_qun(uri):
@@ -31,7 +31,6 @@ async def get_qun(uri):
 
 async def get_myself(uri):
     async with websockets.connect(uri) as temp:
-        nonlocal myself
         my = {
             "method": "getInfo",
             "pid": 0
@@ -40,7 +39,7 @@ async def get_myself(uri):
         res = await temp.recv()
         # print(res)
         myid = json.loads(res)['myid']
-        myself = myid
+        myself.append(myid)
 
 
 def on_message(ws, message):
@@ -68,12 +67,12 @@ def on_message(ws, message):
                     }
                     ws.send(json.dumps(msg))
         else:
-            if data['nickName'] not in ['Ealeo', '文件传输助手'] and 'gh' not in data['fromid']:
+            if data['nickName'] not in ['Ealeo', '文件传输助手'] and 'gh' not in data['fromid'] and 'weixin' not in data['fromid']:
                 fromid = data['fromid']
                 from replay_time import re_time
                 num = re_time.get(fromid, 0)
                 if num < config.reply_max:
-                    if fromid != myself:
+                    if fromid not in myself:
                         msg = {
                             "method": "sendText",
                             "wxid": fromid,
@@ -118,6 +117,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(get_qun(uri))
     loop.run_until_complete(get_myself(uri))
+    print(myself)
     loop.close()
     ws = websocket.WebSocketApp("ws://127.0.0.1:8202/wx?name=www&key=" + key,
                                 on_message=on_message,
