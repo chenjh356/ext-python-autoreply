@@ -12,6 +12,7 @@ except ImportError:
 import time
 
 qun = {}
+myself = ''
 
 
 async def get_qun(uri):
@@ -27,6 +28,19 @@ async def get_qun(uri):
             if '@chatroom' in i['wxid']:
                 qun[i['wxid']] = i['nickName']
         # print(qun)
+
+async def get_myself(uri):
+    async with websockets.connect(uri) as temp:
+        nonlocal myself
+        my = {
+            "method": "getInfo",
+            "pid": 0
+        }
+        await temp.send(json.dumps(my))
+        res = await temp.recv()
+        # print(res)
+        myid = json.loads(res)['myid']
+        myself = myid
 
 
 def on_message(ws, message):
@@ -59,7 +73,7 @@ def on_message(ws, message):
                 from replay_time import re_time
                 num = re_time.get(fromid, 0)
                 if num < config.reply_max:
-                    if fromid != 'wxid_ki1umk2cj36t21':
+                    if fromid != myself:
                         msg = {
                             "method": "sendText",
                             "wxid": fromid,
@@ -103,6 +117,7 @@ if __name__ == "__main__":
     uri = "ws://127.0.0.1:8202/wx?name=www&key=" + key
     loop = asyncio.get_event_loop()
     loop.run_until_complete(get_qun(uri))
+    loop.run_until_complete(get_myself(uri))
     loop.close()
     ws = websocket.WebSocketApp("ws://127.0.0.1:8202/wx?name=www&key=" + key,
                                 on_message=on_message,
