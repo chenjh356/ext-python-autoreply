@@ -1,6 +1,17 @@
 # ext-python-autoreply
 e小天python自动回复
 
+## 模块需求
+- websocket_client
+- websockets
+- python3.X
+
+安装
+
+`pip install websocket_client`
+
+`pip install websockets`
+
 ## 功能
 - 个人微信号信息自动回复
 - 群@消息记录，并自动回复
